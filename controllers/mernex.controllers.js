@@ -1,5 +1,4 @@
 require('path');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 require('../databases/codine.dbs');
@@ -7,13 +6,11 @@ const logger = require('../logs/logger');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const expressJwt = require('express-jwt');
+const { sendEmailWithNodemailer } = require('../helpers/email');
 const _ = require('lodash');
 const { OAuth2Client } = require('google-auth-library');
 const fetch = require('node-fetch');
 // sendgrid
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const signUpController = async (req, res) => {
   const { name, email, password } = req.body;
@@ -30,32 +27,19 @@ const signUpController = async (req, res) => {
     });
 
     const emailData = {
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: `Account activation link`,
+      from: process.env.EMAIL_TO, // MAKE SURE THIS EMAIL IS YOUR GMAIL FOR WHICH YOU GENERATED APP PASSWORD
+      to: email, // WHO SHOULD BE RECEIVING THIS EMAIL? IT SHOULD BE THE USER EMAIL (VALID EMAIL ADDRESS) WHO IS TRYING TO SIGNUP
+      subject: 'ACCOUNT ACTIVATION LINK',
       html: `
                 <h1>Please use the following link to activate your account</h1>
-                <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
+                <p>http://localhost:3000/auth/activate/${token}</p>
                 <hr />
-                <p>This email may contain sensetive information</p>
-                <p>${process.env.CLIENT_URL}</p>
+                <p>This email may contain sensitive information</p>
+                <p>http://localhost:3000</p>
             `,
     };
 
-    sgMail
-      .send(emailData)
-      .then((sent) => {
-        // console.log('SIGNUP EMAIL SENT', sent)
-        return res.json({
-          message: `Email has been sent to ${email}. Follow the instruction to activate your account`,
-        });
-      })
-      .catch((err) => {
-        // console.log('SIGNUP EMAIL SENT ERROR', err)
-        return res.json({
-          message: err.message,
-        });
-      });
+    sendEmailWithNodemailer(req, res, emailData);
   });
 };
 

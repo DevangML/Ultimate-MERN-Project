@@ -17,18 +17,18 @@ if ((process.env.NODE_ENV = 'development')) {
 
 // Compression
 
-expressApp.use(compression());
+app.use(compression());
 
 // CORS Setup
 const corsOptions = {
   origin: 'http://localhost:3000',
 };
-expressApp.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Basic express config
-expressApp.use(express.json({ limit: '30mb', extended: true }));
-expressApp.use(express.urlencoded({ limit: '30mb', extended: true }));
-expressApp.use(helmet());
+app.use(express.json({ limit: '30mb', extended: true }));
+app.use(express.urlencoded({ limit: '30mb', extended: true }));
+app.use(helmet());
 
 // Making database connection
 
@@ -40,8 +40,8 @@ app.use('/user', userRouter);
 
 // Static view configuration
 
-// expressApp.use(express.static('view/build'));
-// expressApp.get('*', (req, res) => {
+// app.use(express.static('view/build'));
+// app.get('*', (req, res) => {
 //   res.sendFile(path.resolve(__dirname, 'view', 'build', 'index.html'));
 //   logger.info('Static files i.e. client served');
 // });
@@ -50,6 +50,6 @@ app.use('/user', userRouter);
 const port = process.env.PORT || '5000';
 const host = 'localhost';
 
-expressApp.listen(port, () => {
+app.listen(port, () => {
   logger.info(`Server started and running on http://${host}:${port}`);
 });

@@ -2771,6 +2771,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nodemailer@npm:^6.7.2":
+  version: 6.7.2
+  resolution: "nodemailer@npm:6.7.2"
+  checksum: 3c37a40928448e2f5118a9f2f016c7a4f32228d0e6b7cc7d1834b8001374cc77280dc077a83239420f6daea4c898d9a1f336dfc2273bb7eddaf51a36bd126f72
+  languageName: node
+  linkType: hard
+
 "nodemon@npm:^2.0.15":
   version: 2.0.15
   resolution: "nodemon@npm:2.0.15"
@@ -3411,6 +3418,7 @@ __metadata:
     jsonwebtoken: ^8.5.1
     mongoose: ^6.1.6
     morgan: ^1.10.0
+    nodemailer: ^6.7.2
     nodemon: ^2.0.15
     pusher: ^5.0.0
     redis: ^4.0.1
