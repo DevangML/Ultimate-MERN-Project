@@ -3,7 +3,7 @@ const { authRouter, userRouter } = require('./routes/mernex.routes');
 const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
-const mong = require('./databases/codine.dbs');
+const mong = require('./databases/mernex.dbs');
 const logger = require('./logs/logger');
 require('dotenv').config({ path: '.env' });
 const compression = require('compression');

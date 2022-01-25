@@ -17,7 +17,8 @@ const {
   resetPasswordValidator,
 } = require('../validators/auth');
 const { runValidation } = require('../validators');
-const { requireSignin, adminMiddleware } = require('../middlewares/adminMiddleware');
+const { adminMiddleware } = require('../middlewares/adminMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 const authRouter = express.Router();
 const userRouter = express.Router();
 
@@ -56,19 +57,19 @@ authRouter.post('/create/4', googleLoginController);
 // @access Public
 authRouter.post('/create/5', facebookLoginController);
 
-// @route GET /user/:id
+// @route GET /user/read/:id
 // @desc Retrieve User Data
 // @access Public
-userRouter.get('/:id', requireSignin, readUserController);
+userRouter.get('/read/:id', readUserController);
 
 // @route PUT /user/update/1
 // @desc Update User Data
 // @access Public
-userRouter.put('/update/1', requireSignin, updateUserController);
+userRouter.put('/update/1', authMiddleware, updateUserController);
 
 // @route PUT /user/update/2
 // @desc Update Admin Data
 // @access Public
-userRouter.put('/update/2', requireSignin, adminMiddleware, updateUserController);
+userRouter.put('/update/2', authMiddleware, adminMiddleware, updateUserController);
 
 module.exports = { authRouter, userRouter };

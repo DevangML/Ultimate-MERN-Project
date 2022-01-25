@@ -1,21 +1,21 @@
 require('path');
 const dotenv = require('dotenv');
 dotenv.config();
-require('../databases/codine.dbs');
 const logger = require('../logs/logger');
-const User = require('../models/user');
+const UserModel = require('../models/user');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { sendEmailWithNodemailer } = require('../helpers/email');
 const _ = require('lodash');
-const { OAuth2Client } = require('google-auth-library');
 const fetch = require('node-fetch');
-// sendgrid
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const signUpController = async (req, res) => {
   const { name, email, password } = req.body;
 
-  User.findOne({ email }).exec((err, user) => {
+  UserModel.findOne({ email }).exec((err, user) => {
     if (user) {
       return res.status(400).json({
         error: 'Email is taken',
@@ -57,7 +57,7 @@ const accountActivationController = async (req, res) => {
 
       const { name, email, password } = jwt.decode(token);
 
-      const user = new User({ name, email, password });
+      const user = new UserModel({ name, email, password });
 
       user.save((err, user) => {
         if (err) {
@@ -81,7 +81,7 @@ const accountActivationController = async (req, res) => {
 const signInController = (req, res) => {
   const { email, password } = req.body;
   // check if user exist
-  User.findOne({ email }).exec((err, user) => {
+  UserModel.findOne({ email }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: 'User with that email does not exist. Please signup',
@@ -94,7 +94,7 @@ const signInController = (req, res) => {
       });
     }
     // generate a token and send to client
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     const { _id, name, email, role } = user;
 
     return res.json({
@@ -107,7 +107,7 @@ const signInController = (req, res) => {
 const forgotPasswordController = async (req, res) => {
   const { email } = req.body;
 
-  User.findOne({ email }, (err, user) => {
+  UserModel.findOne({ email }, (err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: 'User with that email does not exist',
@@ -168,7 +168,7 @@ const resetPasswordController = async (req, res) => {
         });
       }
 
-      User.findOne({ resetPasswordLink }, (err, user) => {
+      UserModel.findOne({ resetPasswordLink }, (err, user) => {
         if (err || !user) {
           return res.status(400).json({
             error: 'Something went wrong. Try later',
@@ -204,9 +204,9 @@ const googleLoginController = async (req, res) => {
     // console.log('GOOGLE LOGIN RESPONSE',response)
     const { email_verified, name, email } = response.payload;
     if (email_verified) {
-      User.findOne({ email }).exec((err, user) => {
+      UserModel.findOne({ email }).exec((err, user) => {
         if (user) {
-          const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+          const token = jwt.sign({ _id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
           const { _id, email, name, role } = user;
           return res.json({
             token,
@@ -214,7 +214,7 @@ const googleLoginController = async (req, res) => {
           });
         } else {
           let password = email + process.env.JWT_SECRET;
-          user = new User({ name, email, password });
+          user = new UserModel({ name, email, password });
           user.save((err, data) => {
             if (err) {
               console.log('ERROR GOOGLE LOGIN ON USER SAVE', err);
@@ -222,7 +222,7 @@ const googleLoginController = async (req, res) => {
                 error: 'User signup failed with google',
               });
             }
-            const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            const token = jwt.sign({ _id: data.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
             const { _id, email, name, role } = data;
             return res.json({
               token,
@@ -253,9 +253,9 @@ const facebookLoginController = async (req, res) => {
       // .then(response => console.log(response))
       .then((response) => {
         const { email, name } = response;
-        User.findOne({ email }).exec((err, user) => {
+        UserModel.findOne({ email }).exec((err, user) => {
           if (user) {
-            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            const token = jwt.sign({ _id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
             const { _id, email, name, role } = user;
             return res.json({
               token,
@@ -263,7 +263,7 @@ const facebookLoginController = async (req, res) => {
             });
           } else {
             let password = email + process.env.JWT_SECRET;
-            user = new User({ name, email, password });
+            user = new UserModel({ name, email, password });
             user.save((err, data) => {
               if (err) {
                 console.log('ERROR FACEBOOK LOGIN ON USER SAVE', err);
@@ -271,7 +271,7 @@ const facebookLoginController = async (req, res) => {
                   error: 'User signup failed with facebook',
                 });
               }
-              const token = jwt.sign({ _id: data._id }, process.env.JWT_SECRET, {
+              const token = jwt.sign({ _id: data.id }, process.env.JWT_SECRET, {
                 expiresIn: '7d',
               });
               const { _id, email, name, role } = data;
@@ -293,7 +293,7 @@ const facebookLoginController = async (req, res) => {
 
 const readUserController = async (req, res) => {
   const userId = req.params.id;
-  User.findById(userId).exec((err, user) => {
+  UserModel.findById(userId).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: 'User not found',
@@ -309,7 +309,7 @@ const updateUserController = async (req, res) => {
   // console.log('UPDATE USER - req.user', req.user, 'UPDATE DATA', req.body);
   const { name, password } = req.body;
 
-  User.findOne({ _id: req.user._id }, (err, user) => {
+  UserModel.findOne({ _id: req.user._id }, (err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: 'User not found',

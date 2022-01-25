@@ -1,14 +1,11 @@
 const dotenv = require('dotenv');
 const logger = require('../logs/logger');
-
-const requireSign = expressJwt({
-  secret: process.env.JWT_SECRET, // req.user._id
-});
+const User = require('../models/user');
 
 dotenv.config();
 
 const adminMiddleware = async (req, res, next) => {
-  User.findById({ _id: req.user._id }).exec((err, user) => {
+  User.findById({ _id: req.user.id }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: 'User not found',
@@ -26,4 +23,4 @@ const adminMiddleware = async (req, res, next) => {
   });
 };
 
-module.exports = { adminMiddleware, requireSign };
+module.exports = { adminMiddleware };
