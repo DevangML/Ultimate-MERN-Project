@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import Layout from '../core/Layout';
-import { isAuth, getCookie, signout, updateUser } from '../auth/helpers';
+import { isAuth, signout, updateUser } from '../auth/helpers';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import { API, setHeaders } from '../api';

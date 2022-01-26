@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import Layout from '../core/Layout';
 import { API, setHeaders } from '../api';
 import { isAuth, getCookie, signout, updateUser } from '../auth/helpers';
@@ -14,8 +13,6 @@ const Admin = ({ history }) => {
     password: '',
     buttonText: 'Submit',
   });
-
-  const token = getCookie('token');
 
   useEffect(() => {
     loadProfile();
