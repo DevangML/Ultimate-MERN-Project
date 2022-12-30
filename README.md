@@ -4,7 +4,7 @@
 <h2>🚀 Getting Started</h2>
 <ol>
   <li>Clone this repository
-  <pre><code>git clone https://github.com/YOUR_USERNAME/ultimate-mern-stack-project.git</code></pre></li>
+  <pre><code>git clone https://github.com/YOUR_USERNAME/Ultimate-MERN-Project.git</code></pre></li>
   <li>Install dependencies
   <pre><code>npm install</code></pre></li>
   <li>Start the development server
